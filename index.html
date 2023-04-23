@@ -152,15 +152,15 @@ document.getElementById("copy-btn").addEventListener("click", function () {
 });
 
       function processCSV(csv) {
-  // Parse the CSV data
-  const rows = csv.trim().split('\n').map(row => row.split(','));
-  const headers = rows.shift();
+    // Parse the CSV data
+    const rows = csv.trim().split('\n').map(row => row.split(','));
+    const headers = rows.shift();
 
-  // Filter the rows to only include those with valid data and non-cancelled status
-  const validRows = rows.filter(row => {
-    const [commission, endDate, provider, bookedDate, status] = row;
-    return commission !== '' && endDate !== '' && provider !== '' && bookedDate !== '' && status.toLowerCase() !== 'cancelled';
-  });
+    // Filter the rows to only include those with valid data and non-cancelled status
+    const validRows = rows.filter(row => {
+      const [commission, endDate, provider, bookedDate, status] = row;
+      return commission !== '' && endDate !== '' && provider !== '' && bookedDate !== '' && status.toLowerCase() !== 'cancelled';
+    });
 
         // Create a new array of rows with the Paydate field added
         const processedRows = validRows.map(row => {
@@ -214,9 +214,9 @@ document.getElementById("copy-btn").addEventListener("click", function () {
           return date.toISOString().slice(0, 10);
         }
         // Create a sorted array of months from the commissionsByMonth object
-const sortedMonths = Object.keys(commissionsByMonth).sort();
+  const sortedMonths = Object.keys(commissionsByMonth).sort();
 
-// Iterate through the sortedMonths array instead of the commissionsByMonth object
+  // Iterate through the sortedMonths array instead of the commissionsByMonth object
   for (const month of sortedMonths) {
     const row = document.createElement('tr');
     const commissionCell = document.createElement('td');
@@ -238,12 +238,12 @@ const sortedMonths = Object.keys(commissionsByMonth).sort();
   copyBtn.style.display = "block";
 }
 
-  // Helper function to add a specified number of days to a date
-  function addDays(dateStr, days) {
-    const date = new Date(dateStr);
-    date.setDate(date.getDate() + days);
-    return date.toISOString().slice(0, 10);
-  }
+// Helper function to add a specified number of days to a date
+function addDays(dateStr, days) {
+  const date = new Date(dateStr);
+  date.setDate(date.getDate() + days);
+  return date.toISOString().slice(0, 10);
+}
 </script>
 </body>
 </html>
