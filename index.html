@@ -48,15 +48,15 @@
 
     <script>
       var uploadBtn = document.getElementById("upload-btn");
-      var processBtn = document.getElementById("process-btn");
+var processBtn = document.getElementById("process-btn");
 
-      uploadBtn.addEventListener("click", browseFiles, false);
-      processBtn.addEventListener("click", startProcessing, false);
+uploadBtn.addEventListener("click", browseFiles, false);
+processBtn.addEventListener("click", startProcessing, false);
 
-
-      var dropbox = document.getElementById("dropbox");
-      var fileInput = document.getElementById("file-input");
-      var csvContent = ""; // Add this line to store the uploaded CSV content
+var dropbox = document.getElementById("dropbox");
+var fileInput = document.getElementById("file-input");
+var csvContent = ""; // Add this line to store the uploaded CSV content
+const outputDiv = document.getElementById("output"); // Move the outputDiv definition here
 
       dropbox.addEventListener("dragenter", dragEnter, false);
       dropbox.addEventListener("dragover", dragOver, false);
@@ -132,11 +132,7 @@
       }
 
 document.getElementById("clear-btn").addEventListener("click", function () {
- 
-const outputDiv = document.getElementById("output") || document.createElement('div');
-outputDiv.id = "output";
-
-  const copyBtn = document.getElementById("copy-btn");
+   const copyBtn = document.getElementById("copy-btn");
   outputDiv.innerHTML = "";
   outputDiv.style.display = "none";
   copyBtn.style.display = "none";
