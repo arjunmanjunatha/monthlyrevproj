@@ -17,8 +17,20 @@
   </head>
   <body>
     <div id="dropbox">Drag and drop a CSV file here or click to select a file</div>
-    <input type="file" id="file-input" style="display: none;">
+<button id="upload-btn">Upload CSV</button>
+
+<button id="process-btn">Process CSV</button>
+<input type="file" id="file-input" style="display: none;">
+
+
     <script>
+    var uploadBtn = document.getElementById("upload-btn");
+var processBtn = document.getElementById("process-btn");
+
+uploadBtn.addEventListener("click", browseFiles, false);
+processBtn.addEventListener("click", startProcessing, false);
+
+  
       var dropbox = document.getElementById("dropbox");
       var fileInput = document.getElementById("file-input");
       
@@ -47,47 +59,55 @@
       }
       
       function drop(event) {
-        event.stopPropagation();
-        event.preventDefault();
-        dropbox.style.border = "2px dashed #ccc";
-        var files = event.dataTransfer.files;
-        var file = files[0];
-        if (file.type === "text/csv") {
-          var reader = new FileReader();
-          reader.onload = function(event) {
-            var csv = event.target.result;
-            processCSV(csv);
-          };
-          reader.readAsText(file);
-        } else {
-          alert("Please drop a CSV file.");
-        }
-      }
+  event.stopPropagation();
+  event.preventDefault();
+  dropbox.style.border = "2px dashed #ccc";
+  var files = event.dataTransfer.files;
+  var file = files[0];
+  if (file.type === "text/csv") {
+    var reader = new FileReader();
+    reader.onload = function(event) {
+      var csv = event.target.result;
+      processCSV(csv);
+    };
+    reader.readAsText(file);
+  } else {
+    alert("Please drop a CSV file.");
+  }
+}
 
-      function browseFiles(event) {
-        event.stopPropagation();
-        event.preventDefault();
-        fileInput.click();
-      }
+
+     function browseFiles(event) {
+  event.stopPropagation();
+  event.preventDefault();
+  fileInput.click();
+}
+
 
       function uploadFile(event) {
-        event.stopPropagation();
-        event.preventDefault();
-        var file = fileInput.files[0];
-        if (file.type === "text/csv") {
-          var reader = new FileReader();
-          reader.onload = function(event) {
-            var csv = event.target.result;
-            processCSV(csv);
-          };
-          reader.readAsText(file);
-        } else {
-          alert("Please select a CSV file.");
-        }
-      }
+  event.stopPropagation();
+  event.preventDefault();
+  var file = fileInput.files[0];
+  if (file.type === "text/csv") {
+    var reader = new FileReader();
+    reader.onload = function(event) {
+      var csv = event.target.result;
+      processCSV(csv);
+    };
+    reader.readAsText(file);
+  } else {
+    alert("Please select a CSV file.");
+  }
+
+
+      function startProcessing() {
+  // Get the CSV data from the output div
+  var csv = document.getElementById("output").innerHTML;
+  processCSV(csv);
+}
+     
       
-      function processCSV(csv) {
-        
+        function processCSV(csv) {
   // Parse the CSV data
   const rows = csv.trim().split('\n').map(row => row.split(','));
   const headers = rows.shift();
@@ -139,9 +159,9 @@
 
   // Display the table on the page
   const outputDiv = document.createElement('div');
-  outputDiv.appendChild(table);
-  document.body.appendChild(outputDiv);
-}
+outputDiv.id = "output";
+outputDiv.appendChild(table);
+document.body.appendChild(outputDiv);
 
 // Helper function to add a specified number of days to a date
 function addDays(dateStr, days) {
@@ -149,6 +169,11 @@ function addDays(dateStr, days) {
   date.setDate(date.getDate() + days);
   return date.toISOString().slice(0, 10);
 }
+const outputDiv = document.createElement('div');
+outputDiv.id = "output";
+outputDiv.appendChild(table);
+document.body.appendChild(outputDiv);
+
 
       }
     </script>
