@@ -132,7 +132,10 @@
       }
 
 document.getElementById("clear-btn").addEventListener("click", function () {
-  const outputDiv = document.getElementById("output");
+ 
+const outputDiv = document.getElementById("output") || document.createElement('div');
+outputDiv.id = "output";
+
   const copyBtn = document.getElementById("copy-btn");
   outputDiv.innerHTML = "";
   outputDiv.style.display = "none";
@@ -141,7 +144,7 @@ document.getElementById("clear-btn").addEventListener("click", function () {
 
 // Add an event listener for the copy to clipboard button
 document.getElementById("copy-btn").addEventListener("click", function () {
-  const outputDiv = document.getElementById("output");
+ 
   const range = document.createRange();
   range.selectNode(outputDiv);
   window.getSelection().removeAllRanges();
@@ -200,13 +203,8 @@ document.getElementById("copy-btn").addEventListener("click", function () {
           row.appendChild(monthCell);
           table.appendChild(row);
         }
-
-        // Display the table on the page
-        const outputDiv = document.createElement('div');
-        outputDiv.id = "output";
-        outputDiv.appendChild(table);
-        document.body.appendChild(outputDiv);
-
+   
+        
         // Helper function to add a specified number of days to a date
         function addDays(dateStr, days) {
           const date = new Date(dateStr);
@@ -215,6 +213,12 @@ document.getElementById("copy-btn").addEventListener("click", function () {
         }
         // Create a sorted array of months from the commissionsByMonth object
   const sortedMonths = Object.keys(commissionsByMonth).sort();
+
+  // Clear the table's previous content
+  table.innerHTML = '';
+
+  // Add header row
+  table.appendChild(headerRow);
 
   // Iterate through the sortedMonths array instead of the commissionsByMonth object
   for (const month of sortedMonths) {
@@ -250,6 +254,7 @@ function formatMonth(month) {
   const date = new Date(`${month}-01`);
   const monthNames = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
   return `${monthNames[date.getMonth()]} - ${date.getFullYear()}`;
+
 }
 </script>
 </body>
