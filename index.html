@@ -33,6 +33,7 @@ processBtn.addEventListener("click", startProcessing, false);
   
       var dropbox = document.getElementById("dropbox");
       var fileInput = document.getElementById("file-input");
+       var csvContent = ""; // Add this line to store the uploaded CSV content
       
       dropbox.addEventListener("dragenter", dragEnter, false);
       dropbox.addEventListener("dragover", dragOver, false);
@@ -85,26 +86,28 @@ processBtn.addEventListener("click", startProcessing, false);
 
 
       function uploadFile(event) {
-  event.stopPropagation();
-  event.preventDefault();
-  var file = fileInput.files[0];
-  if (file.type === "text/csv") {
-    var reader = new FileReader();
-    reader.onload = function(event) {
-      var csv = event.target.result;
-      processCSV(csv);
-    };
-    reader.readAsText(file);
-  } else {
-    alert("Please select a CSV file.");
-  }
-
+        event.stopPropagation();
+        event.preventDefault();
+        var file = fileInput.files[0];
+        if (file.type === "text/csv") {
+          var reader = new FileReader();
+          reader.onload = function(event) {
+            csvContent = event.target.result; // Assign the file content to csvContent
+          };
+          reader.readAsText(file);
+        } else {
+          alert("Please select a CSV file.");
+        }
+      }
 
       function startProcessing() {
-  // Get the CSV data from the output div
-  var csv = document.getElementById("output").innerHTML;
-  processCSV(csv);
-}
+        if (csvContent === "") {
+          alert("Please upload a CSV file first.");
+          return;
+        }
+        processCSV(csvContent); // Process the csvContent
+      }
+
      
       
         function processCSV(csv) {
