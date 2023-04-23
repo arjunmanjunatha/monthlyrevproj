@@ -161,7 +161,7 @@ processBtn.addEventListener("click", startProcessing, false);
   }
 
   // Display the table on the page
-  const outputDiv = document.createElement('div');
+const outputDiv = document.createElement('div');
 outputDiv.id = "output";
 outputDiv.appendChild(table);
 document.body.appendChild(outputDiv);
@@ -172,6 +172,7 @@ function addDays(dateStr, days) {
   date.setDate(date.getDate() + days);
   return date.toISOString().slice(0, 10);
 }
+
 
     </script>
   </body>
