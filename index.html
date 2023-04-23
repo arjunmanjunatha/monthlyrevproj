@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Upload and Process CSV File</title>
+    <style>
+      #dropbox {
+        width: 300px;
+        height: 200px;
+        border: 2px dashed #ccc;
+        font-size: 16px;
+        text-align: center;
+        line-height: 200px;
+        margin: 0 auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="dropbox">Drag and drop a CSV file here or click to select a file</div>
+    <input type="file" id="file-input" style="display: none;">
+    <script>
+      var dropbox = document.getElementById("dropbox");
+      var fileInput = document.getElementById("file-input");
+      
+      dropbox.addEventListener("dragenter", dragEnter, false);
+      dropbox.addEventListener("dragover", dragOver, false);
+      dropbox.addEventListener("dragleave", dragLeave, false);
+      dropbox.addEventListener("drop", drop, false);
+      dropbox.addEventListener("click", browseFiles, false);
+      fileInput.addEventListener("change", uploadFile, false);
+      
+      function dragEnter(event) {
+        event.stopPropagation();
+        event.preventDefault();
+        dropbox.style.border = "2px dashed #aaa";
+      }
+      
+      function dragOver(event) {
+        event.stopPropagation();
+        event.preventDefault();
+      }
+      
+      function dragLeave(event) {
+        event.stopPropagation();
+        event.preventDefault();
+        dropbox.style.border = "2px dashed #ccc";
+      }
+      
+      function drop(event) {
+        event.stopPropagation();
+        event.preventDefault();
+        dropbox.style.border = "2px dashed #ccc";
+        var files = event.dataTransfer.files;
+        var file = files[0];
+        if (file.type === "text/csv") {
+          var reader = new FileReader();
+          reader.onload = function(event) {
+            var csv = event.target.result;
+            processCSV(csv);
+          };
+          reader.readAsText(file);
+        } else {
+          alert("Please drop a CSV file.");
+        }
+      }
+
+      function browseFiles(event) {
+        event.stopPropagation();
+        event.preventDefault();
+        fileInput.click();
+      }
+
+      function uploadFile(event) {
+        event.stopPropagation();
+        event.preventDefault();
+        var file = fileInput.files[0];
+        if (file.type === "text/csv") {
+          var reader = new FileReader();
+          reader.onload = function(event) {
+            var csv = event.target.result;
+            processCSV(csv);
+          };
+          reader.readAsText(file);
+        } else {
+          alert("Please select a CSV file.");
+        }
+      }
+      
+      function processCSV(csv) {
+        function processCSV(csv) {
+  // Parse the CSV data
+  const rows = csv.trim().split('\n').map(row => row.split(','));
+  const headers = rows.shift();
+
+  // Filter the rows to only include those with valid data
+  const validRows = rows.filter(row => {
+    const [commission, endDate, provider, bookedDate] = row;
+    return commission !== '' && endDate !== '' && provider !== '' && bookedDate !== '';
+  });
+
+  // Create a new array of rows with the Paydate field added
+  const processedRows = validRows.map(row => {
+    const [bookingId, partnerId, campaignId, commission, status, category, insertedDate, lastUpdatedDate, provider, bookedDate, startDate, endDate, destinationCity, destinationCountry, device, product, source, userCountry, browserName, osName, distanceUserFromDest, userTimezone] = row;
+    const payDate = endDate === 'null' || provider === 'Trivago' ? addDays(bookedDate, 90) : addDays(endDate, 7);
+    return [...row, payDate];
+  });
+
+  // Group the rows by month and calculate the total commission for each month
+  const commissionsByMonth = {};
+  processedRows.forEach(row => {
+    const [bookingId, partnerId, campaignId, commission, status, category, insertedDate, lastUpdatedDate, provider, bookedDate, startDate, endDate, destinationCity, destinationCountry, device, product, source, userCountry, browserName, osName, distanceUserFromDest, userTimezone, payDate] = row;
+    const month = payDate.slice(0, 7);
+    if (!commissionsByMonth[month]) {
+      commissionsByMonth[month] = 0;
+    }
+    commissionsByMonth[month] += parseFloat(commission);
+  });
+
+  // Create a table to display the commissions by month
+  const table = document.createElement('table');
+  const headerRow = document.createElement('tr');
+  const commissionHeader = document.createElement('th');
+  commissionHeader.textContent = 'Commission';
+  headerRow.appendChild(commissionHeader);
+  const monthHeader = document.createElement('th');
+  monthHeader.textContent = 'Month';
+  headerRow.appendChild(monthHeader);
+  table.appendChild(headerRow);
+  for (const month in commissionsByMonth) {
+    const row = document.createElement('tr');
+    const commissionCell = document.createElement('td');
+    commissionCell.textContent = commissionsByMonth[month].toFixed(2);
+    row.appendChild(commissionCell);
+    const monthCell = document.createElement('td');
+    monthCell.textContent = month;
+    row.appendChild(monthCell);
+    table.appendChild(row);
+  }
+
+  // Display the table on the page
+  const outputDiv = document.createElement('div');
+  outputDiv.appendChild(table);
+  document.body.appendChild(outputDiv);
+}
+
+// Helper function to add a specified number of days to a date
+function addDays(dateStr, days) {
+  const date = new Date(dateStr);
+  date.setDate(date.getDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+
+      }
+    </script>
+  </body>
+</html>
