@@ -217,27 +217,26 @@ document.getElementById("copy-btn").addEventListener("click", function () {
 const sortedMonths = Object.keys(commissionsByMonth).sort();
 
 // Iterate through the sortedMonths array instead of the commissionsByMonth object
-    for (const month of sortedMonths) {
-      const row = document.createElement('tr');
-      const commissionCell = document.createElement('td');
-      commissionCell.textContent = commissionsByMonth[month].toFixed(2);
-      row.appendChild(commissionCell);
-      const monthCell = document.createElement('td');
-      monthCell.textContent = month;
-      row.appendChild(monthCell);
-      table.appendChild(row);
-    }
-
-    // Display the table on the page
-    const outputDiv = document.getElementById("output");
-    outputDiv.innerHTML = ""; // Clear the previous content
-    outputDiv.appendChild(table);
-    outputDiv.style.display = "block";
-
-    // Display the copy to clipboard button
-    const copyBtn = document.getElementById("copy-btn");
-    copyBtn.style.display = "block";
+  for (const month of sortedMonths) {
+    const row = document.createElement('tr');
+    const commissionCell = document.createElement('td');
+    commissionCell.textContent = commissionsByMonth[month].toFixed(2);
+    row.appendChild(commissionCell);
+    const monthCell = document.createElement('td');
+    monthCell.textContent = month;
+    row.appendChild(monthCell);
+    table.appendChild(row);
   }
+
+  // Display the table on the page
+  outputDiv.innerHTML = ""; // Clear the previous content
+  outputDiv.appendChild(table);
+  outputDiv.style.display = "block";
+
+  // Display the copy to clipboard button
+  const copyBtn = document.getElementById("copy-btn");
+  copyBtn.style.display = "block";
+}
 
   // Helper function to add a specified number of days to a date
   function addDays(dateStr, days) {
