@@ -160,11 +160,12 @@ processBtn.addEventListener("click", startProcessing, false);
     table.appendChild(row);
   }
 
-  // Display the table on the page
-const outputDiv = document.createElement('div');
-outputDiv.id = "output";
-outputDiv.appendChild(table);
-document.body.appendChild(outputDiv);
+    // Display the table on the page
+  const outputDiv = document.createElement('div');
+  outputDiv.id = "output";
+  outputDiv.appendChild(table);
+  document.body.appendChild(outputDiv);
+}
 
 // Helper function to add a specified number of days to a date
 function addDays(dateStr, days) {
