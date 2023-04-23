@@ -223,7 +223,7 @@ document.getElementById("copy-btn").addEventListener("click", function () {
     commissionCell.textContent = commissionsByMonth[month].toFixed(2);
     row.appendChild(commissionCell);
     const monthCell = document.createElement('td');
-    monthCell.textContent = month;
+    monthCell.textContent = formatMonth(month);
     row.appendChild(monthCell);
     table.appendChild(row);
   }
@@ -243,6 +243,13 @@ function addDays(dateStr, days) {
   const date = new Date(dateStr);
   date.setDate(date.getDate() + days);
   return date.toISOString().slice(0, 10);
+}
+
+// Helper function to format the month
+function formatMonth(month) {
+  const date = new Date(`${month}-01`);
+  const monthNames = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+  return `${monthNames[date.getMonth()]} - ${date.getFullYear()}`;
 }
 </script>
 </body>
