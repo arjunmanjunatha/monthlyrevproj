@@ -152,15 +152,15 @@ document.getElementById("copy-btn").addEventListener("click", function () {
 });
 
       function processCSV(csv) {
-        // Parse the CSV data
-        const rows = csv.trim().split('\n').map(row => row.split(','));
-        const headers = rows.shift();
+  // Parse the CSV data
+  const rows = csv.trim().split('\n').map(row => row.split(','));
+  const headers = rows.shift();
 
-        // Filter the rows to only include those with valid data
-        const validRows = rows.filter(row => {
-          const [commission, endDate, provider, bookedDate] = row;
-          return commission !== '' && endDate !== '' && provider !== '' && bookedDate !== '';
-        });
+  // Filter the rows to only include those with valid data and non-cancelled status
+  const validRows = rows.filter(row => {
+    const [commission, endDate, provider, bookedDate, status] = row;
+    return commission !== '' && endDate !== '' && provider !== '' && bookedDate !== '' && status.toLowerCase() !== 'cancelled';
+  });
 
         // Create a new array of rows with the Paydate field added
         const processedRows = validRows.map(row => {
