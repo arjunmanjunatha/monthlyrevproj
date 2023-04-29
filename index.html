@@ -103,6 +103,7 @@ function processData(csvData) {
     const commissionIndex = header.indexOf('commission');
 
     const projectedCommissions = {};
+    const totalApprovedBookings = {}; // New object to store approved bookings count
 
     data.forEach(row => {
         if (row.length < header.length) return;
@@ -124,22 +125,27 @@ function processData(csvData) {
             } else {
                 projectedCommissions[monthYear] = commission;
             }
+   if (totalApprovedBookings[monthYear]) {
+                totalApprovedBookings[monthYear] += 1;
+            } else {
+                totalApprovedBookings[monthYear] = 1;
+            }
         }
     });
 
     document.getElementById('generateButton').addEventListener('click', function() {
-        generateOutputTable(projectedCommissions);
+        generateOutputTable(projectedCommissions, totalApprovedBookings); // Pass the totalApprovedBookings object
     });
 }
 
-function generateOutputTable(projectedCommissions) {
+function generateOutputTable(projectedCommissions, totalApprovedBookings) {
     const outputTable = document.getElementById('outputTable');
     outputTable.style.display = 'table';
 
     const thead = outputTable.createTHead();
     const headerRow = thead.insertRow();
 
-    ['Month, Year', 'Projected Commissions'].forEach(text => {
+    ['Month, Year', 'Projected Commissions', 'Total Approved Bookings'].forEach(text => {
         const th = document.createElement('th');
         th.textContent = text;
         headerRow.appendChild(th);
@@ -148,10 +154,11 @@ function generateOutputTable(projectedCommissions) {
     const tbody = outputTable.createTBody();
 const monthNames = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
 Object.entries(projectedCommissions).sort().forEach(([monthYear, commissions]) => {
+        // ...
     const [year, month] = monthYear.split('-');
     const monthName = monthNames[parseInt(month, 10) - 1];
 
-        const row = tbody.insertRow();
+      const row = tbody.insertRow();
 
         const monthYearCell = row.insertCell();
    monthYearCell.textContent = `${monthName} - ${year}`;
@@ -159,9 +166,11 @@ Object.entries(projectedCommissions).sort().forEach(([monthYear, commissions]) =
 
         const commissionsCell = row.insertCell();
         commissionsCell.textContent = commissions.toFixed(2);
+        const bookingsCell = row.insertCell();
+        bookingsCell.textContent = totalApprovedBookings[monthYear] || 0; // Display the count of approved bookings or 0 if no data
     });
+
 }
     </script>
 </body>
 </html>
-
