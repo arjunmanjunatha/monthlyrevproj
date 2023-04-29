@@ -104,6 +104,7 @@ function processData(csvData) {
 
     const projectedCommissions = {};
     const totalApprovedBookings = {}; // New object to store approved bookings count
+    const popBonusCommissions = {}; // New object to store POP bonus commissions
 
     data.forEach(row => {
         if (row.length < header.length) return;
@@ -111,45 +112,55 @@ function processData(csvData) {
         const endDate = new Date(row[endDateIndex]);
         const status = row[statusIndex];
         const provider = row[providerIndex];
-      const commission = parseFloat(row[commissionIndex]);
-
+        const commission = parseFloat(row[commissionIndex]);
+        const source = row[header.indexOf('source')]; // Get the source value from the row
 
         if (status === 'approved') {
             const payoutDate = new Date(endDate);
             payoutDate.setDate(endDate.getDate() + (provider === 'trivago' ? 90 : 7));
-         const monthYear = `${payoutDate.getFullYear()}-${('0' + (payoutDate.getMonth() + 1)).slice(-2)}`;
-
+            const monthYear = `${payoutDate.getFullYear()}-${('0' + (payoutDate.getMonth() + 1)).slice(-2)}`;
 
             if (projectedCommissions[monthYear]) {
                 projectedCommissions[monthYear] += commission;
             } else {
                 projectedCommissions[monthYear] = commission;
             }
-   if (totalApprovedBookings[monthYear]) {
+
+            if (totalApprovedBookings[monthYear]) {
                 totalApprovedBookings[monthYear] += 1;
             } else {
                 totalApprovedBookings[monthYear] = 1;
+            }
+
+            // Update popBonusCommissions if the source is "pop"
+            if (source === 'pop') {
+                if (popBonusCommissions[monthYear]) {
+                    popBonusCommissions[monthYear] += commission;
+                } else {
+                    popBonusCommissions[monthYear] = commission;
+                }
             }
         }
     });
 
     document.getElementById('generateButton').addEventListener('click', function() {
-        generateOutputTable(projectedCommissions, totalApprovedBookings); // Pass the totalApprovedBookings object
+        generateOutputTable(projectedCommissions, totalApprovedBookings, popBonusCommissions); // Pass the popBonusCommissions object
     });
 }
 
-function generateOutputTable(projectedCommissions, totalApprovedBookings) {
+function generateOutputTable(projectedCommissions, totalApprovedBookings, popBonusCommissions) {
     const outputTable = document.getElementById('outputTable');
     outputTable.style.display = 'table';
 
     const thead = outputTable.createTHead();
     const headerRow = thead.insertRow();
 
-    ['Month, Year', 'Projected Commissions', 'Total Approved Bookings'].forEach(text => {
+    ['Month, Year', 'Projected Commissions', 'Total Approved Bookings', 'POP Bonus Commission'].forEach(text => {
         const th = document.createElement('th');
         th.textContent = text;
         headerRow.appendChild(th);
     });
+
 
     const tbody = outputTable.createTBody();
 const monthNames = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
@@ -168,6 +179,9 @@ Object.entries(projectedCommissions).sort().forEach(([monthYear, commissions]) =
         commissionsCell.textContent = commissions.toFixed(2);
         const bookingsCell = row.insertCell();
         bookingsCell.textContent = totalApprovedBookings[monthYear] || 0; // Display the count of approved bookings or 0 if no data
+         // POP Bonus Commission cell
+        const popBonusCommissionCell = row.insertCell();
+        popBonusCommissionCell.textContent = (popBonusCommissions[monthYear] || 0).toFixed(2); // Display the POP bonus commission or 0 if no data
     });
 
 }
