@@ -63,13 +63,14 @@
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-  <!-- ... -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.3.3/html2canvas.min.js"></script>
+
 </head>
 <body>
   <div class="container">
     <h1 class="mt-5 mb-4 text-primary">UPLOAD Partner Bookings CSV from AIRPLANE</h1>
     
-    <input type="file" id="csvFile" onchange="handleFileUpload(this)">
+   <input type="file" id="csvFile">
 
     <div id="uploadConfirmation" class="mt-2" style="display:none;">
       <span class="text-success">CSV uploaded successfully!</span>
@@ -83,9 +84,14 @@
       <!-- table content -->
     </table>
   </div>
+<button id="downloadButton" class="btn btn-primary mt-4" onclick="downloadAsJpg(partnerID)" disabled>Download as JPG</button>
+
 <script>
-document.getElementById('csvFile').addEventListener('change', function () {
-  document.getElementById('uploadButton').disabled = false;
+let partnerID = '';
+
+document.getElementById('csvFile').addEventListener('change', function (event) {
+  handleFileUpload(event.target);
+  document.getElementById('generateButton').disabled = false;
 });
 
 function handleFileUpload(input) {
@@ -124,6 +130,7 @@ function processData(csvData) {
 
     const partnerIdIndex = header.indexOf('partnerId'); // Get the index of the partnerId column
     let partnerIdValue; // Declare a variable to store the partnerId value
+partnerID = data[0][partnerIdIndex];
 
     data.forEach(row => {
         if (row.length < header.length) return;
@@ -180,6 +187,7 @@ function generateOutputTable(projectedCommissions, totalApprovedBookings, popBon
     const th = document.createElement('th');
     th.textContent = text;
     headerRow.appendChild(th);
+    document.getElementById('downloadButton').disabled = false;
 });
 
 const tbody = outputTable.createTBody();
@@ -212,6 +220,31 @@ outputTableTitle.textContent = `Commission Payable Projection by Month As on ${f
 // Set the output table subtitle with the partnerId value
 const outputTableSubtitle = document.getElementById('outputTableSubtitle');
 outputTableSubtitle.textContent = `Custom report for: ${partnerIdValue}`;
+}
+
+function downloadAsJpg(partnerID) {
+  const outputTable = document.getElementById('outputTable');
+  const outputTableTitle = document.getElementById('outputTableTitle');
+  const outputTableSubtitle = document.getElementById('outputTableSubtitle');
+
+  // Create a container div to include the table, title, and subtitle
+  const container = document.createElement('div');
+  container.appendChild(outputTableTitle.cloneNode(true));
+  container.appendChild(outputTableSubtitle.cloneNode(true));
+  container.appendChild(outputTable.cloneNode(true));
+  document.body.appendChild(container);
+
+  html2canvas(container, {scale: 2}).then(function(canvas) {
+    const link = document.createElement('a');
+    link.href = canvas.toDataURL('image/jpeg');
+    link.download = `revproj_${partnerID}.jpg`;
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    document.body.removeChild(container);
+  });
+
 }
 </script>
 </body>
