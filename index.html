@@ -59,41 +59,54 @@
             text-align: left;
         }
     </style>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <!-- ... -->
 </head>
 <body>
-    <div class="container">
-        <h1>Revenue Projection by Month</h1>
-  
-        <p>Explainer text - instructions</p>
-        <div class="input-container">
-            <input type="file" id="csvFile" accept=".csv">
-            <label for="csvFile">Drag and drop into this box or click to select a file</label>
-        </div>
-        <button id="uploadButton" disabled>Upload</button>
-        <button id="generateButton" disabled>Generate</button>
-              <h2 id="outputTableTitle"></h2> 
-              <h3 id="outputTableSubtitle"></h3>
-        <table id="outputTable" style="display: none;">
-            <!-- Table header and data will be populated using JavaScript -->
-        </table>
+  <div class="container">
+    <h1 class="mt-5 mb-4 text-primary">UPLOAD Partner Bookings CSV from AIRPLANE</h1>
+    
+    <input type="file" id="csvFile" onchange="handleFileUpload(this)">
+
+    <div id="uploadConfirmation" class="mt-2" style="display:none;">
+      <span class="text-success">CSV uploaded successfully!</span>
     </div>
+
+    <button id="generateButton" class="btn btn-primary mt-4" disabled>Generate Report</button>
+    
+    <h2 id="outputTableTitle" class="mt-5 mb-2"></h2>
+    <h3 id="outputTableSubtitle" class="mb-4"></h3>
+    <table id="outputTable" class="table table-striped" style="display: none;">
+      <!-- table content -->
+    </table>
+  </div>
 <script>
-document.getElementById('csvFile').addEventListener('change', function() {
-    document.getElementById('uploadButton').disabled = false;
+document.getElementById('csvFile').addEventListener('change', function () {
+  document.getElementById('uploadButton').disabled = false;
 });
 
-document.getElementById('uploadButton').addEventListener('click', function() {
-    const csvFile = document.getElementById('csvFile').files[0];
+function handleFileUpload(input) {
+  const csvFile = input.files[0];
+
+  // Check if a file is selected
+  if (csvFile) {
     const reader = new FileReader();
 
     reader.onload = function(e) {
-        const csvData = e.target.result;
-        processData(csvData);
+      const csvData = e.target.result;
+      processData(csvData);
     };
 
     reader.readAsText(csvFile);
     document.getElementById('generateButton').disabled = false;
-});
+  } else {
+    alert('Please select a file before uploading.');
+  }
+}
+
 
 function processData(csvData) {
     const rows = csvData.split('\n');
