@@ -1,257 +1,190 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Upload and Process CSV File</title>
-  <!-- Add the Bootstrap CSS link for modern styles -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    #dropbox {
-      width: 300px;
-      height: 200px;
-      border: 2px dashed #ccc;
-      font-size: 16px;
-      text-align: center;
-      line-height: 200px;
-      margin: 0 auto;
-    }
-
-    /* Add styles for the table borders */
-    table {
-      border-collapse: collapse;
-      width: 100%;
-    }
-
-    th, td {
-      border: 1px solid #ccc;
-      padding: 8px;
-      text-align: left;
-    }
-
-    th {
-      background-color: #f2f2f2;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Revenue Projection by Month</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 2rem;
+            line-height: 1.6;
+        }
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+        }
+        .input-container {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        .input-container input[type="file"] {
+            display: none;
+        }
+        .input-container label {
+            background-color: #007bff;
+            color: #fff;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 0.5rem;
+            text-align: left;
+        }
+    </style>
 </head>
 <body>
-<div id="dropbox" class="mb-3">Drag and drop a CSV file here or click to select a file</div>
-<button id="upload-btn" class="btn btn-primary mb-3">Upload CSV</button>
-<button id="process-btn" class="btn btn-success mb-3">Process CSV</button>
-<button id="clear-btn" class="btn btn-danger mb-3">Clear Results</button>
-<input type="file" id="file-input" style="display: none;">
-
-<!-- Add an element for the copy to clipboard button -->
-<button id="copy-btn" class="btn btn-info mb-3" style="display:none;">Copy to Clipboard</button>
-
-<!-- Add an element for the output table -->
-<div id="output" class="mb-3" style="display:none;"></div>
-
+    <div class="container">
+        <h1>Revenue Projection by Month</h1>
+        <p>Explainer text - instructions</p>
+        <div class="input-container">
+            <input type="file" id="csvFile" accept=".csv">
+            <label for="csvFile">Drag and drop into this box or click to select a file</label>
+        </div>
+        <button id="uploadButton" disabled>Upload</button>
+        <button id="generateButton" disabled>Generate</button>
+        <table id="outputTable" style="display: none;">
+            <!-- Table header and data will be populated using JavaScript -->
+        </table>
+    </div>
     <script>
-      var uploadBtn = document.getElementById("upload-btn");
-var processBtn = document.getElementById("process-btn");
-
-uploadBtn.addEventListener("click", browseFiles, false);
-processBtn.addEventListener("click", startProcessing, false);
-
-var dropbox = document.getElementById("dropbox");
-var fileInput = document.getElementById("file-input");
-var csvContent = ""; // Add this line to store the uploaded CSV content
-const outputDiv = document.getElementById("output"); // Move the outputDiv definition here
-
-      dropbox.addEventListener("dragenter", dragEnter, false);
-      dropbox.addEventListener("dragover", dragOver, false);
-      dropbox.addEventListener("dragleave", dragLeave, false);
-      dropbox.addEventListener("drop", drop, false);
-      dropbox.addEventListener("click", browseFiles, false);
-      fileInput.addEventListener("change", uploadFile, false);
-
-      function dragEnter(event) {
-        event.stopPropagation();
-        event.preventDefault();
-        dropbox.style.border = "2px dashed #aaa";
-      }
-
-      function dragOver(event) {
-        event.stopPropagation();
-        event.preventDefault();
-      }
-
-      function dragLeave(event) {
-        event.stopPropagation();
-        event.preventDefault();
-        dropbox.style.border = "2px dashed #ccc";
-      }
-
-      function drop(event) {
-        event.stopPropagation();
-        event.preventDefault();
-        dropbox.style.border = "2px dashed #ccc";
-        var files = event.dataTransfer.files;
-        var file = files[0];
-        if (file.type === "text/csv") {
-          var reader = new FileReader();
-          reader.onload = function(event) {
-            var csv = event.target.result;
-            processCSV(csv);
-          };
-          reader.readAsText(file);
-        } else {
-          alert("Please drop a CSV file.");
-        }
-      }
-
-
-      function browseFiles(event) {
-        event.stopPropagation();
-        event.preventDefault();
-        fileInput.click();
-      }
-
-
-      function uploadFile(event) {
-        event.stopPropagation();
-        event.preventDefault();
-        var file = fileInput.files[0];
-        if (file.type === "text/csv") {
-          var reader = new FileReader();
-          reader.onload = function(event) {
-            csvContent = event.target.result; // Assign the file content to csvContent
-          };
-          reader.readAsText(file);
-        } else {
-          alert("Please select a CSV file.");
-        }
-      }
-
-      function startProcessing() {
-        if (csvContent === "") {
-          alert("Please upload a CSV file first.");
-          return;
-        }
-        processCSV(csvContent); // Process the csvContent
-      }
-
-document.getElementById("clear-btn").addEventListener("click", function () {
-   const copyBtn = document.getElementById("copy-btn");
-  outputDiv.innerHTML = "";
-  outputDiv.style.display = "none";
-  copyBtn.style.display = "none";
+        document.getElementById('csvFile').addEventListener('change', function() {
+    document.getElementById('uploadButton').disabled = false;
 });
 
-// Add an event listener for the copy to clipboard button
-document.getElementById("copy-btn").addEventListener("click", function () {
- 
-  const range = document.createRange();
-  range.selectNode(outputDiv);
-  window.getSelection().removeAllRanges();
-  window.getSelection().addRange(range);
-  document.execCommand("copy");
-  window.getSelection().removeAllRanges();
-  alert("Table copied to clipboard!");
+document.getElementById('uploadButton').addEventListener('click', function() {
+    const csvFile = document.getElementById('csvFile').files[0];
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+        const csvData = e.target.result;
+        processData(csvData);
+    };
+
+    reader.readAsText(csvFile);
+    document.getElementById('generateButton').disabled = false;
 });
 
-      function processCSV(csv) {
-    // Parse the CSV data
-    const rows = csv.trim().split('\n').map(row => row.split(','));
-    const headers = rows.shift();
+function processData(csvData) {
+    const rows = csvData.split('\n');
+    const header = rows.shift().split(',');
+    const data = rows.map(row => row.split(','));
 
-    // Filter the rows to only include those with valid data and non-cancelled status
-    const validRows = rows.filter(row => {
-      const [commission, endDate, provider, bookedDate, status] = row;
-      return commission !== '' && endDate !== '' && provider !== '' && bookedDate !== '' && status.toLowerCase() !== 'cancelled';
+    const endDateIndex = header.indexOf('endDate');
+    const statusIndex = header.indexOf('status');
+    const providerIndex = header.indexOf('provider');
+    const commissionIndex = header.indexOf('commission');
+
+    const projectedCommissions = {};
+    const totalApprovedBookings = {}; // New object to store approved bookings count
+    const popBonusCommissions = {}; // New object to store POP bonus commissions
+
+    data.forEach(row => {
+        if (row.length < header.length) return;
+
+        const endDate = new Date(row[endDateIndex]);
+        const status = row[statusIndex];
+        const provider = row[providerIndex];
+        const commission = parseFloat(row[commissionIndex]);
+        const source = row[header.indexOf('source')]; // Get the source value from the row
+
+        if (status === 'approved') {
+            const payoutDate = new Date(endDate);
+            payoutDate.setDate(endDate.getDate() + (provider === 'trivago' ? 90 : 7));
+            const monthYear = `${payoutDate.getFullYear()}-${('0' + (payoutDate.getMonth() + 1)).slice(-2)}`;
+
+            if (projectedCommissions[monthYear]) {
+                projectedCommissions[monthYear] += commission;
+            } else {
+                projectedCommissions[monthYear] = commission;
+            }
+
+            if (totalApprovedBookings[monthYear]) {
+                totalApprovedBookings[monthYear] += 1;
+            } else {
+                totalApprovedBookings[monthYear] = 1;
+            }
+
+            // Update popBonusCommissions if the source is "pop"
+            if (source === 'pop') {
+                if (popBonusCommissions[monthYear]) {
+                    popBonusCommissions[monthYear] += commission;
+                } else {
+                    popBonusCommissions[monthYear] = commission;
+                }
+            }
+        }
     });
 
-        // Create a new array of rows with the Paydate field added
-        const processedRows = validRows.map(row => {
-          const [bookingId, partnerId, campaignId, commission, status, category, insertedDate, lastUpdatedDate, provider, bookedDate, startDate, endDate, destinationCity, destinationCountry, device, product, source, userCountry, browserName, osName, distanceUserFromDest, userTimezone] = row;
-          const payDate = endDate === 'null' || provider === 'Trivago' ? addDays(bookedDate, 90) : addDays(endDate, 7);
-          return [...row, payDate];
-        });
-
-        // Group the rows by month and calculate the total commission for each month
-        const commissionsByMonth = {};
-        processedRows.forEach(row => {
-          const [bookingId, partnerId, campaignId, commission, status, category, insertedDate, lastUpdatedDate, provider, bookedDate, startDate, endDate, destinationCity, destinationCountry, device, product, source, userCountry, browserName, osName, distanceUserFromDest, userTimezone, payDate] = row;
-          const month = payDate.slice(0, 7);
-          if (!commissionsByMonth[month]) {
-            commissionsByMonth[month] = 0;
-          }
-          commissionsByMonth[month] += parseFloat(commission);
-        });
-
-        // Create a table to display the commissions by month
-        const table = document.createElement('table');
-        const headerRow = document.createElement('tr');
-        const commissionHeader = document.createElement('th');
-        commissionHeader.textContent = 'Commission';
-        headerRow.appendChild(commissionHeader);
-        const monthHeader = document.createElement('th');
-        monthHeader.textContent = 'Month';
-        headerRow.appendChild(monthHeader);
-        table.appendChild(headerRow);
-        for (const month in commissionsByMonth) {
-          const row = document.createElement('tr');
-          const commissionCell = document.createElement('td');
-          commissionCell.textContent = commissionsByMonth[month].toFixed(2);
-          row.appendChild(commissionCell);
-          const monthCell = document.createElement('td');
-          monthCell.textContent = month;
-          row.appendChild(monthCell);
-          table.appendChild(row);
-        }
-   
-        
-        // Helper function to add a specified number of days to a date
-        function addDays(dateStr, days) {
-          const date = new Date(dateStr);
-          date.setDate(date.getDate() + days);
-          return date.toISOString().slice(0, 10);
-        }
-        // Create a sorted array of months from the commissionsByMonth object
-  const sortedMonths = Object.keys(commissionsByMonth).sort();
-
-  // Clear the table's previous content
-  table.innerHTML = '';
-
-  // Add header row
-  table.appendChild(headerRow);
-
-  // Iterate through the sortedMonths array instead of the commissionsByMonth object
-  for (const month of sortedMonths) {
-    const row = document.createElement('tr');
-    const commissionCell = document.createElement('td');
-    commissionCell.textContent = commissionsByMonth[month].toFixed(2);
-    row.appendChild(commissionCell);
-    const monthCell = document.createElement('td');
-    monthCell.textContent = formatMonth(month);
-    row.appendChild(monthCell);
-    table.appendChild(row);
-  }
-
-  // Display the table on the page
-  outputDiv.innerHTML = ""; // Clear the previous content
-  outputDiv.appendChild(table);
-  outputDiv.style.display = "block";
-
-  // Display the copy to clipboard button
-  const copyBtn = document.getElementById("copy-btn");
-  copyBtn.style.display = "block";
+    document.getElementById('generateButton').addEventListener('click', function() {
+        generateOutputTable(projectedCommissions, totalApprovedBookings, popBonusCommissions); // Pass the popBonusCommissions object
+    });
 }
 
-// Helper function to add a specified number of days to a date
-function addDays(dateStr, days) {
-  const date = new Date(dateStr);
-  date.setDate(date.getDate() + days);
-  return date.toISOString().slice(0, 10);
-}
+function generateOutputTable(projectedCommissions, totalApprovedBookings, popBonusCommissions) {
+    const outputTable = document.getElementById('outputTable');
+    outputTable.style.display = 'table';
 
-// Helper function to format the month
-function formatMonth(month) {
-  const date = new Date(`${month}-01`);
-  const monthNames = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
-  return `${monthNames[date.getMonth()]} - ${date.getFullYear()}`;
+    const thead = outputTable.createTHead();
+    const headerRow = thead.insertRow();
+
+    ['Month, Year', 'Projected Commissions', 'Total Approved Bookings', 'POP Bonus Commission'].forEach(text => {
+        const th = document.createElement('th');
+        th.textContent = text;
+        headerRow.appendChild(th);
+    });
+
+
+    const tbody = outputTable.createTBody();
+const monthNames = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+Object.entries(projectedCommissions).sort().forEach(([monthYear, commissions]) => {
+        // ...
+    const [year, month] = monthYear.split('-');
+    const monthName = monthNames[parseInt(month, 10) - 1];
+
+      const row = tbody.insertRow();
+
+        const monthYearCell = row.insertCell();
+   monthYearCell.textContent = `${monthName} - ${year}`;
+
+
+        const commissionsCell = row.insertCell();
+        commissionsCell.textContent = commissions.toFixed(2);
+        const bookingsCell = row.insertCell();
+        bookingsCell.textContent = totalApprovedBookings[monthYear] || 0; // Display the count of approved bookings or 0 if no data
+         // POP Bonus Commission cell
+        const popBonusCommissionCell = row.insertCell();
+        popBonusCommissionCell.textContent = (popBonusCommissions[monthYear] || 0).toFixed(2); // Display the POP bonus commission or 0 if no data
+    });
 
 }
-</script>
+    </script>
 </body>
 </html>
