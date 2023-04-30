@@ -63,6 +63,7 @@
 <body>
     <div class="container">
         <h1>Revenue Projection by Month</h1>
+  
         <p>Explainer text - instructions</p>
         <div class="input-container">
             <input type="file" id="csvFile" accept=".csv">
@@ -70,12 +71,14 @@
         </div>
         <button id="uploadButton" disabled>Upload</button>
         <button id="generateButton" disabled>Generate</button>
+              <h2 id="outputTableTitle"></h2> 
+              <h3 id="outputTableSubtitle"></h3>
         <table id="outputTable" style="display: none;">
             <!-- Table header and data will be populated using JavaScript -->
         </table>
     </div>
-    <script>
-        document.getElementById('csvFile').addEventListener('change', function() {
+<script>
+document.getElementById('csvFile').addEventListener('change', function() {
     document.getElementById('uploadButton').disabled = false;
 });
 
@@ -106,6 +109,9 @@ function processData(csvData) {
     const totalApprovedBookings = {}; // New object to store approved bookings count
     const popBonusCommissions = {}; // New object to store POP bonus commissions
 
+    const partnerIdIndex = header.indexOf('partnerId'); // Get the index of the partnerId column
+    let partnerIdValue; // Declare a variable to store the partnerId value
+
     data.forEach(row => {
         if (row.length < header.length) return;
 
@@ -114,6 +120,10 @@ function processData(csvData) {
         const provider = row[providerIndex];
         const commission = parseFloat(row[commissionIndex]);
         const source = row[header.indexOf('source')]; // Get the source value from the row
+
+        if (!partnerIdValue) { // If the partnerIdValue is not yet set
+            partnerIdValue = row[partnerIdIndex]; // Assign the value of partnerId from the row
+        }
 
         if (status === 'approved') {
             const payoutDate = new Date(endDate);
@@ -144,47 +154,52 @@ function processData(csvData) {
     });
 
     document.getElementById('generateButton').addEventListener('click', function() {
-        generateOutputTable(projectedCommissions, totalApprovedBookings, popBonusCommissions); // Pass the popBonusCommissions object
+        generateOutputTable(projectedCommissions, totalApprovedBookings, popBonusCommissions, partnerIdValue); // Pass the partnerIdValue to the function
     });
 }
 
-function generateOutputTable(projectedCommissions, totalApprovedBookings, popBonusCommissions) {
+function generateOutputTable(projectedCommissions, totalApprovedBookings, popBonusCommissions, partnerIdValue) {
     const outputTable = document.getElementById('outputTable');
     outputTable.style.display = 'table';
+   const thead = outputTable.createTHead();
+   const headerRow = thead.insertRow();
+     ['Month, Year', 'Projected Commissions', 'Total Approved Bookings', 'POP Bonus Commission'].forEach(text => {
+    const th = document.createElement('th');
+    th.textContent = text;
+    headerRow.appendChild(th);
+});
 
-    const thead = outputTable.createTHead();
-    const headerRow = thead.insertRow();
-
-    ['Month, Year', 'Projected Commissions', 'Total Approved Bookings', 'POP Bonus Commission'].forEach(text => {
-        const th = document.createElement('th');
-        th.textContent = text;
-        headerRow.appendChild(th);
-    });
-
-
-    const tbody = outputTable.createTBody();
+const tbody = outputTable.createTBody();
 const monthNames = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
 Object.entries(projectedCommissions).sort().forEach(([monthYear, commissions]) => {
-        // ...
     const [year, month] = monthYear.split('-');
     const monthName = monthNames[parseInt(month, 10) - 1];
 
-      const row = tbody.insertRow();
+    const row = tbody.insertRow();
 
-        const monthYearCell = row.insertCell();
-   monthYearCell.textContent = `${monthName} - ${year}`;
+    const monthYearCell = row.insertCell();
+    monthYearCell.textContent = `${monthName} - ${year}`;
 
+    const commissionsCell = row.insertCell();
+    commissionsCell.textContent = commissions.toFixed(2);
+    const bookingsCell = row.insertCell();
+    bookingsCell.textContent = totalApprovedBookings[monthYear] || 0; // Display the count of approved bookings or 0 if no data
 
-        const commissionsCell = row.insertCell();
-        commissionsCell.textContent = commissions.toFixed(2);
-        const bookingsCell = row.insertCell();
-        bookingsCell.textContent = totalApprovedBookings[monthYear] || 0; // Display the count of approved bookings or 0 if no data
-         // POP Bonus Commission cell
-        const popBonusCommissionCell = row.insertCell();
-        popBonusCommissionCell.textContent = (popBonusCommissions[monthYear] || 0).toFixed(2); // Display the POP bonus commission or 0 if no data
-    });
+    // POP Bonus Commission cell
+    const popBonusCommissionCell = row.insertCell();
+    popBonusCommissionCell.textContent = (popBonusCommissions[monthYear] || 0).toFixed(2); // Display the POP bonus commission or 0 if no data
+});
 
+// Set the output table title with today's date
+const today = new Date();
+const formattedDate = `${today.getDate()}-${today.toLocaleString('en', { month: 'short' })}-${today.getFullYear()}`;
+const outputTableTitle = document.getElementById('outputTableTitle');
+outputTableTitle.textContent = `Commission Payable Projection by Month As on ${formattedDate}`;
+
+// Set the output table subtitle with the partnerId value
+const outputTableSubtitle = document.getElementById('outputTableSubtitle');
+outputTableSubtitle.textContent = `Custom report for: ${partnerIdValue}`;
 }
-    </script>
+</script>
 </body>
 </html>
