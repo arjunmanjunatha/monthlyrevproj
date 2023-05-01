@@ -85,6 +85,8 @@
     </div>
             <button id="generateButton" class="btn btn-primary mt-4" disabled>Generate Report</button>
         </div>
+        <button id="cancellationsReportButton">Cancellations Report</button>
+
 
         <h2 id="outputTableTitle" class="mt-5 mb-2"></h2>
         <h3 id="outputTableSubtitle" class="mb-4"></h3>
@@ -129,14 +131,16 @@ function processData(csvData) {
     const statusIndex = header.indexOf('status');
     const providerIndex = header.indexOf('provider');
     const commissionIndex = header.indexOf('commission');
-    const bookedDateIndex = header.indexOf('bookedDate'); // Add this line to get the index of the bookedDate column
+    const bookedDateIndex = header.indexOf('bookedDate'); // Add this line
 
     const projectedCommissions = {};
     const totalApprovedBookings = {};
     const popBonusCommissions = {};
-
     const partnerIdIndex = header.indexOf('partnerId');
+    const totalBookings = {}; // New object to store the total number of bookings
+    const canceledBookings = {}; // New object to store the number of canceled bookings
     let partnerIdValue;
+
     partnerID = data[0][partnerIdIndex];
 
     data.forEach(row => {
@@ -146,18 +150,24 @@ function processData(csvData) {
         const status = row[statusIndex];
         const provider = row[providerIndex];
         const commission = parseFloat(row[commissionIndex]);
+        const bookedDate = row[bookedDateIndex].split('T')[0]; // Add this line
         const source = row[header.indexOf('source')];
-        const bookedDate = new Date(row[bookedDateIndex]); // Add this line to get the bookedDate value from the row
 
         if (!partnerIdValue) {
             partnerIdValue = row[partnerIdIndex];
         }
 
-        if (status === 'approved') {
-            const payoutDate = new Date(provider === 'trivago' ? bookedDate : endDate);
-            payoutDate.setDate(payoutDate.getDate() + (provider === 'trivago' ? 90 : 7));
-            const monthYear = `${payoutDate.getFullYear()}-${('0' + (payoutDate.getMonth() + 1)).slice(-2)}`;
+        const payoutDate = new Date(provider === 'trivago' ? bookedDate : endDate);
+        payoutDate.setDate(payoutDate.getDate() + (provider === 'trivago' ? 90 : 7));
+        const monthYear = `${payoutDate.getFullYear()}-${('0' + (payoutDate.getMonth() + 1)).slice(-2)}`;
 
+        if (totalBookings[monthYear]) {
+            totalBookings[monthYear] += 1;
+        } else {
+            totalBookings[monthYear] = 1;
+        }
+
+        if (status === 'approved') {
             if (projectedCommissions[monthYear]) {
                 projectedCommissions[monthYear] += commission;
             } else {
@@ -177,12 +187,67 @@ function processData(csvData) {
                     popBonusCommissions[monthYear] = commission;
                 }
             }
+        } else if (status === 'canceled') {
+            if (canceledBookings[monthYear]) {
+                canceledBookings[monthYear] += 1;
+            } else {
+                canceledBookings[monthYear] = 1;
+            }
         }
     });
 
     document.getElementById('generateButton').addEventListener('click', function() {
         generateOutputTable(projectedCommissions, totalApprovedBookings, popBonusCommissions, partnerIdValue);
     });
+
+    // Add the event listener for the Cancellations Report button
+    document.getElementById('cancellationsReportButton').addEventListener('click', function() {
+        generateCancellationsReportTable(totalBookings, canceledBookings);
+    });
+}
+function generateCancellationsReportTable(totalBookings, canceledBookings) {
+    const outputTable = document.getElementById('outputTable');
+    outputTable.innerHTML = '';
+
+    const thead = document.createElement('thead');
+    const headerRow = document.createElement('tr');
+    const columns = ['Month and Year', 'Total Number of Bookings', 'Number of Canceled Bookings', '% of Canceled Bookings'];
+
+    columns.forEach(column => {
+        const th = document.createElement('th');
+        th.textContent = column;
+        headerRow.appendChild(th);
+    });
+
+    thead.appendChild(headerRow);
+    outputTable.appendChild(thead);
+
+    const tbody = document.createElement('tbody');
+
+    for (const monthYear in totalBookings) {
+        const tr = document.createElement('tr');
+
+        const monthYearCell = document.createElement('td');
+        monthYearCell.textContent = monthYear;
+        tr.appendChild(monthYearCell);
+
+        const totalBookingsCell = document.createElement('td');
+        totalBookingsCell.textContent = totalBookings[monthYear];
+        tr.appendChild(totalBookingsCell);
+
+        const canceledBookingsCell = document.createElement('td');
+        canceledBookingsCell.textContent = canceledBookings[monthYear] || 0;
+        tr.appendChild(canceledBookingsCell);
+
+        const canceledPercentageCell = document.createElement('td');
+        const canceledPercentage = ((canceledBookings[monthYear] || 0) / totalBookings[monthYear]) * 100;
+        canceledPercentageCell.textContent = `${canceledPercentage.toFixed(2)}%`;
+        tr.appendChild(canceledPercentageCell);
+
+        tbody.appendChild(tr);
+    }
+
+    outputTable.appendChild(tbody);
 }
 
 
@@ -254,8 +319,37 @@ function downloadAsJpg(partnerID) {
     document.body.removeChild(link);
     document.body.removeChild(container);
   });
+  
+  function generateCancellationsReportTable(totalBookings, canceledBookings) {
+    const outputTable = document.getElementById('outputTable');
+    outputTable.innerHTML = '';
+
+    const thead = document.createElement('thead');
+    const headerRow = document.createElement('tr');
+    ['Month and Year', 'Total Bookings', 'Canceled Bookings', '% of Canceled Bookings'].forEach(text => {
+        const th = document.createElement('th');
+        th.textContent = text;
+        headerRow.appendChild(th);
+    });
+    thead.appendChild(headerRow);
+    outputTable.appendChild(thead);
+
+    const tbody = document.createElement('tbody');
+    for (const monthYear in totalBookings) {
+        const tr = document.createElement('tr');
+        [monthYear, totalBookings[monthYear], canceledBookings[monthYear], (canceledBookings[monthYear] / totalBookings[monthYear] * 100).toFixed(2) + '%'].forEach(text => {
+            const td = document.createElement('td');
+            td.textContent = text;
+            tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+    }
+    outputTable.appendChild(tbody);
+}
+
 
 }
+
 </script>
 </body>
 </html>
