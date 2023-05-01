@@ -120,8 +120,6 @@ function handleFileUpload(input) {
     alert('Please select a file before uploading.');
   }
 }
-
-
 function processData(csvData) {
     const rows = csvData.split('\n');
     const header = rows.shift().split(',');
@@ -131,14 +129,15 @@ function processData(csvData) {
     const statusIndex = header.indexOf('status');
     const providerIndex = header.indexOf('provider');
     const commissionIndex = header.indexOf('commission');
+    const bookedDateIndex = header.indexOf('bookedDate'); // Add this line to get the index of the bookedDate column
 
     const projectedCommissions = {};
-    const totalApprovedBookings = {}; // New object to store approved bookings count
-    const popBonusCommissions = {}; // New object to store POP bonus commissions
+    const totalApprovedBookings = {};
+    const popBonusCommissions = {};
 
-    const partnerIdIndex = header.indexOf('partnerId'); // Get the index of the partnerId column
-    let partnerIdValue; // Declare a variable to store the partnerId value
-partnerID = data[0][partnerIdIndex];
+    const partnerIdIndex = header.indexOf('partnerId');
+    let partnerIdValue;
+    partnerID = data[0][partnerIdIndex];
 
     data.forEach(row => {
         if (row.length < header.length) return;
@@ -147,15 +146,16 @@ partnerID = data[0][partnerIdIndex];
         const status = row[statusIndex];
         const provider = row[providerIndex];
         const commission = parseFloat(row[commissionIndex]);
-        const source = row[header.indexOf('source')]; // Get the source value from the row
+        const source = row[header.indexOf('source')];
+        const bookedDate = new Date(row[bookedDateIndex]); // Add this line to get the bookedDate value from the row
 
-        if (!partnerIdValue) { // If the partnerIdValue is not yet set
-            partnerIdValue = row[partnerIdIndex]; // Assign the value of partnerId from the row
+        if (!partnerIdValue) {
+            partnerIdValue = row[partnerIdIndex];
         }
 
         if (status === 'approved') {
-            const payoutDate = new Date(endDate);
-            payoutDate.setDate(endDate.getDate() + (provider === 'trivago' ? 90 : 7));
+            const payoutDate = new Date(provider === 'trivago' ? bookedDate : endDate);
+            payoutDate.setDate(payoutDate.getDate() + (provider === 'trivago' ? 90 : 7));
             const monthYear = `${payoutDate.getFullYear()}-${('0' + (payoutDate.getMonth() + 1)).slice(-2)}`;
 
             if (projectedCommissions[monthYear]) {
@@ -170,7 +170,6 @@ partnerID = data[0][partnerIdIndex];
                 totalApprovedBookings[monthYear] = 1;
             }
 
-            // Update popBonusCommissions if the source is "pop"
             if (source === 'pop') {
                 if (popBonusCommissions[monthYear]) {
                     popBonusCommissions[monthYear] += commission;
@@ -182,9 +181,10 @@ partnerID = data[0][partnerIdIndex];
     });
 
     document.getElementById('generateButton').addEventListener('click', function() {
-        generateOutputTable(projectedCommissions, totalApprovedBookings, popBonusCommissions, partnerIdValue); // Pass the partnerIdValue to the function
+        generateOutputTable(projectedCommissions, totalApprovedBookings, popBonusCommissions, partnerIdValue);
     });
 }
+
 
 function generateOutputTable(projectedCommissions, totalApprovedBookings, popBonusCommissions, partnerIdValue) {
     const outputTable = document.getElementById('outputTable');
@@ -202,6 +202,9 @@ const tbody = outputTable.createTBody();
 const monthNames = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
 Object.entries(projectedCommissions).sort().forEach(([monthYear, commissions]) => {
     const [year, month] = monthYear.split('-');
+
+   
+
     const monthName = monthNames[parseInt(month, 10) - 1];
 
     const row = tbody.insertRow();
@@ -218,7 +221,6 @@ Object.entries(projectedCommissions).sort().forEach(([monthYear, commissions]) =
     const popBonusCommissionCell = row.insertCell();
     popBonusCommissionCell.textContent = (popBonusCommissions[monthYear] || 0).toFixed(2); // Display the POP bonus commission or 0 if no data
 });
-
 // Set the output table title with today's date
 const today = new Date();
 const formattedDate = `${today.getDate()}-${today.toLocaleString('en', { month: 'short' })}-${today.getFullYear()}`;
